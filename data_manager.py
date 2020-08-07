@@ -4,6 +4,9 @@ import time
 import imutils
 import os
 import SlidersC
+import numpy as np
+import copy
+from PIL import Image
 
 
 def get_data(dset_name, imgnum=500):
@@ -12,7 +15,6 @@ def get_data(dset_name, imgnum=500):
     sliders = SlidersC.Sliders()
 
     while sliders.is_started() is False:
-
         frame = vs.read()
 
         if frame is None:
@@ -35,7 +37,7 @@ def get_data(dset_name, imgnum=500):
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
-            break
+            exit()
 
     for i in range(imgnum):
         frame = vs.read()
@@ -72,3 +74,64 @@ def get_data(dset_name, imgnum=500):
 
     vs.stop()
     cv2.destroyAllWindows()
+
+
+def load_data(path_to_data_dir):    #pass path to your data directory
+    data = {}
+    temp_list = []
+    path = os.path.join(path_to_data_dir)
+    if path:
+        dirs = os.listdir(path + "/")
+        for d in dirs:
+            p = os.path.join(path + "/" + d)
+            for img in os.listdir(p):
+                if img.endswith('.png'):
+                    i = Image.open("data/"+d+"/"+img)
+                    matrix = np.asarray(i)
+                    temp_list.append(matrix)
+            t = copy.deepcopy(temp_list)
+            data[d] = t
+            temp_list.clear()
+        return data
+    else:
+        ValueError("No data directory")
+
+
+def add_category(data): #data is dict
+    y = {}
+    temp = []
+    i = -1
+    for k in data:
+        t = [0 for i in data.keys()]
+        i += 1
+        for d in data[k]:
+            t[i] = 1
+            temp.append(t)
+        y[k] = copy.deepcopy(temp)
+        temp.clear()
+    return y
+
+
+def split_data(data, y, factor=0.75):
+    train_x = []
+    train_y = []
+    test_x = []
+    test_y = []
+    for k in data:
+        d = 0
+        while d < len(data[k])*factor:
+            train_x.append(data[k][d])
+            train_y.append(y[k][d])
+            d += 1
+        while d < len(data[k]):
+            test_x.append(data[k][d])
+            test_y.append(y[k][d])
+            d += 1
+    return train_x, train_y, test_x, test_y
+
+
+def normalize_data(data):   #data is numpy array
+    for k in range(len(data)):
+        data[k] = data[k].astype(np.float64)
+        data[k] /= 255
+    return data
