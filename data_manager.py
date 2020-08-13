@@ -6,7 +6,6 @@ import os
 import SlidersC
 import numpy as np
 import copy
-from PIL import Image
 
 
 def get_data(dset_name, imgnum=500):
@@ -117,7 +116,7 @@ def get_image_from_camera(model, IMG_SIZE):
         mask = cv2.resize(mask, (21, IMG_SIZE))
         cv2.imshow("mask", mask)
 
-        mask = np.array(mask).reshape(-1, IMG_SIZE, 21, 1)
+        mask = np.array(mask).reshape(-1, 21, 28, 1)
 
         prediction = model.predict(mask)
         print(prediction)
