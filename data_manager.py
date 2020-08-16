@@ -8,7 +8,7 @@ import numpy as np
 import copy
 
 
-def get_data(dset_name, imgnum=500):
+def get_data(dset_name, imgnum=500, time_between_shots=0.1, IMG_SIZE=50):
     vs = VideoStream(src=0).start()
     time.sleep(3.0)
     sliders = SlidersC.Sliders()
@@ -22,15 +22,11 @@ def get_data(dset_name, imgnum=500):
         frame = imutils.resize(frame, width=600, height=600)
         blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-
-        # sl = (0, 58, 50)
-        # sh = (30, 255, 255)
         sliders.update_slider()
         mask = cv2.inRange(hsv, sliders.get_lower_values(), sliders.get_upper_values())
-        # mask = cv2.inRange(hsv, sl, sh)
-        #cv2.imshow("mask", mask)
-        mask = cv2.erode(mask, None, iterations=2)
-        mask = imutils.resize(mask, width=28, height=28)
+        mask = cv2.erode(mask, (3, 3), iterations=2)
+        mask = cv2.dilate(mask, (3, 3), iterations=10)
+        mask = imutils.resize(mask, width=IMG_SIZE, height=IMG_SIZE)
         cv2.imshow("mask", mask)
 
         key = cv2.waitKey(1) & 0xFF
@@ -38,44 +34,41 @@ def get_data(dset_name, imgnum=500):
         if key == ord("q"):
             exit()
 
+    time.sleep(2.0)
+    print("[INFO] Data acquisition started.")
+
     for i in range(imgnum):
-        frame = vs.read()
+            frame = vs.read()
 
-        if frame is None:
-            break
+            if frame is None:
+                break
 
-        frame = imutils.resize(frame, width=600, height=600)
-        blurred = cv2.GaussianBlur(frame, (11, 11), 0)
-        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+            frame = imutils.resize(frame, width=600, height=600)
+            blurred = cv2.GaussianBlur(frame, (11, 11), 0)
+            hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
-        # sl = (0, 58, 50)
-        # sh = (30, 255, 255)
-        # sliders.update_slider()
-        mask = cv2.inRange(hsv, sliders.get_lower_values(), sliders.get_upper_values())
-        # mask = cv2.inRange(hsv, sl, sh)
-        #cv2.imshow("mask", mask)
-        mask = cv2.erode(mask, None, iterations=2)
-        mask = imutils.resize(mask, width=28, height=28)
-        cv2.imshow("mask", mask)
+            mask = cv2.inRange(hsv, sliders.get_lower_values(), sliders.get_upper_values())
+            mask = cv2.erode(mask, (3, 3), iterations=2)
+            mask = cv2.dilate(mask, (3, 3), iterations=10)
+            mask = imutils.resize(mask, width=IMG_SIZE, height=IMG_SIZE)
+            cv2.imshow("mask", mask)
 
-        path = os.path.join("/home/igor/PycharmProjects/itComesHandy/data", dset_name)
-        if os.path.exists(path):
-            cv2.imwrite("data/" + dset_name + "/" + dset_name + "{}".format(i) + ".png", mask)
-        else:
-            os.mkdir(path)
-            cv2.imwrite("data/" + dset_name + "/" + dset_name + "{}".format(i) + ".png", mask)
-
-        key = cv2.waitKey(1) & 0xFF
-        # if the 'q' key is pressed, stop the loop
-        if key == ord("q"):
-            break
-        time.sleep(0.2)
-
+            path = os.path.join("/home/igor/PycharmProjects/itComesHandy/data", dset_name)
+            if os.path.exists(path):
+                cv2.imwrite("data/" + dset_name + "/" + dset_name + "{}".format(i) + ".png", mask)
+            else:
+                os.mkdir(path)
+                cv2.imwrite("data/" + dset_name + "/" + dset_name + "{}".format(i) + ".png", mask)
+            key = cv2.waitKey(1) & 0xFF
+            # if the 'q' key is pressed, stop the loop
+            if key == ord("q"):
+                break
+            time.sleep(time_between_shots)
     vs.stop()
     cv2.destroyAllWindows()
 
 
-def get_image_from_camera(model, IMG_SIZE):
+def predict_camera_input(model, IMG_SIZE=50):
     vs = VideoStream(src=0).start()
     time.sleep(3.0)
     sliders = SlidersC.Sliders()
@@ -100,7 +93,7 @@ def get_image_from_camera(model, IMG_SIZE):
         if key == ord("q"):
             exit()
 
-    while(True):
+    while (True):
 
         frame = vs.read()
 
@@ -113,14 +106,18 @@ def get_image_from_camera(model, IMG_SIZE):
 
         mask = cv2.inRange(hsv, sliders.get_lower_values(), sliders.get_upper_values())
         mask = cv2.erode(mask, None, iterations=2)
-        mask = cv2.resize(mask, (21, IMG_SIZE))
+        mask = cv2.resize(mask, (IMG_SIZE, IMG_SIZE))
         cv2.imshow("mask", mask)
 
-        mask = np.array(mask).reshape(-1, 21, 28, 1)
+        mask = np.array(mask).reshape(-1, IMG_SIZE, IMG_SIZE, 1)
+        mask = mask/255.0
 
         prediction = model.predict(mask)
-        print(prediction)
-
+        if prediction >=0.5:
+            print("fist")
+        else:
+            print("open hand")
+        os.system('clear')
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
@@ -130,12 +127,13 @@ def get_image_from_camera(model, IMG_SIZE):
     cv2.destroyAllWindows()
 
 
-def load_data(path_to_data_dir, CATEGORIES):#pass path to your data directory
+def load_data(path_to_data_dir, CATEGORIES):  # pass path to your data directory
 
     data = []
     for category in CATEGORIES:
         path = os.path.join(path_to_data_dir, category)
         class_num = CATEGORIES.index(category)
+        print(category + " " + str(class_num))
         for img in os.listdir(path):
             img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
             data.append([img_array, class_num])
@@ -158,7 +156,7 @@ def load_data(path_to_data_dir, CATEGORIES):#pass path to your data directory
     #     ValueError("No data directory")
 
 
-def add_category(data): #data is dict
+def add_category(data):  # data is dict
     y = {}
     temp = []
     i = -1
@@ -180,7 +178,7 @@ def split_data(data, y, factor=0.75):
     test_y = []
     for k in data:
         d = 0
-        while d < len(data[k])*factor:
+        while d < len(data[k]) * factor:
             train_x.append(data[k][d])
             train_y.append(y[k][d])
             d += 1
@@ -191,7 +189,7 @@ def split_data(data, y, factor=0.75):
     return train_x, train_y, test_x, test_y
 
 
-def normalize_data(data):   #data is a numpy array
+def normalize_data(data):  # data is a numpy array
     for k in range(len(data)):
         data[k] = data[k].astype(np.float32)
         data[k] /= 255

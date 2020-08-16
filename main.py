@@ -1,4 +1,4 @@
-import data_manager
+import data_manager as dm
 import copy
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Conv2D, MaxPooling2D, BatchNormalization
@@ -7,14 +7,18 @@ import numpy as np
 from sklearn.metrics import classification_report
 import random
 
+
+# dm.get_data("phone", 500)
+
+
 CATEGORIES = ["openhand", "fist"]
-data = data_manager.load_data("/home/igor/PycharmProjects/itComesHandy/data", CATEGORIES)
+data = dm.load_data("/home/igor/PycharmProjects/ComesHandy/data", CATEGORIES)
 
 # print(data[0])
 
 IMG_WIDTH = 21
 IMG_HEIGHT = 28
-IMG_SIZE = 28
+IMG_SIZE = 50
 
 random.shuffle(data)
 
@@ -25,7 +29,7 @@ for features, label in data:
     X.append(features)
     y.append(label)
 
-X = np.array(X).reshape(-1, IMG_WIDTH, IMG_HEIGHT, 1)
+X = np.array(X).reshape(-1, IMG_SIZE, IMG_SIZE, 1)
 y = np.array(y)
 
 # print(X[1])
@@ -52,6 +56,6 @@ model.compile(loss="binary_crossentropy",
               optimizer="adam",
               metrics=['accuracy'])
 
-model.fit(X, y, batch_size=3, epochs=2, validation_split=0.10)
+model.fit(X, y, batch_size=3, epochs=20, validation_split=0.10)
 
-data_manager.get_image_from_camera(model, IMG_SIZE)
+dm.predict_camera_input(model, IMG_SIZE)

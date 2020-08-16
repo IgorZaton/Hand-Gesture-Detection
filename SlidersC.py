@@ -79,7 +79,7 @@ class Sliders():
 	def set_skin_color_artlight(self):
 		self.lowerHslide.set(0)
 		self.lowerSslide.set(69)
-		self.lowerVslide.set(38)
+		self.lowerVslide.set(11)
 		self.upperHslide.set(191)
 		self.upperSslide.set(180)
 		self.upperVslide.set(90)
