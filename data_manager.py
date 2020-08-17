@@ -6,7 +6,8 @@ import os
 import SlidersC
 import numpy as np
 import copy
-
+import app
+import Bar
 
 def get_data(dset_name, imgnum=500, time_between_shots=0.1, IMG_SIZE=50):
     vs = VideoStream(src=0).start()
@@ -68,7 +69,8 @@ def get_data(dset_name, imgnum=500, time_between_shots=0.1, IMG_SIZE=50):
     cv2.destroyAllWindows()
 
 
-def predict_camera_input(model, IMG_WIDTH=50, IMG_HEIGHT=37):
+def set_camera(IMG_WIDTH=50, IMG_HEIGHT=37):
+
     vs = VideoStream(src=0).start()
     time.sleep(3.0)
     sliders = SlidersC.Sliders()
@@ -92,7 +94,21 @@ def predict_camera_input(model, IMG_WIDTH=50, IMG_HEIGHT=37):
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
             exit()
+    vs.stop()
+    time.sleep(3.0)
+    cv2.destroyAllWindows()
+    (lvh, lvs, lvv) = sliders.get_lower_values()
+    (hvh, hvs, hvv) = sliders.get_upper_values()
+    return (lvh, lvs, lvv), (hvh, hvs, hvv)
 
+
+def predict_camera_input(model, hsv_lower_values, hsv_upper_values, IMG_WIDTH=50, IMG_HEIGHT=37):
+
+    vs = VideoStream(src=0).start()
+    time.sleep(3.0)
+    # bars = app.mainApp()
+    # bars.run()
+    bar = Bar.Bar()
     while (True):
 
         frame = vs.read()
@@ -104,7 +120,7 @@ def predict_camera_input(model, IMG_WIDTH=50, IMG_HEIGHT=37):
         blurred = cv2.GaussianBlur(frame, (11, 11), 0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
-        mask = cv2.inRange(hsv, sliders.get_lower_values(), sliders.get_upper_values())
+        mask = cv2.inRange(hsv, hsv_lower_values, hsv_upper_values)
         mask = cv2.erode(mask, None, iterations=2)
         mask = cv2.resize(mask, (IMG_WIDTH, IMG_HEIGHT))
         cv2.imshow("mask", mask)
@@ -113,7 +129,14 @@ def predict_camera_input(model, IMG_WIDTH=50, IMG_HEIGHT=37):
         mask = mask / 255.0
 
         prediction = model.predict(mask)
-        print(np.round(prediction, 2))
+        prediction = np.round(prediction, 2)*100
+        bar.update(prediction[0][0], prediction[0][1], prediction[0][2], prediction[0][3])
+        # bars.get_open_hand_value(prediction[0])
+        # bars.get_open_hand_value(prediction[1])
+        # bars.get_open_hand_value(prediction[2])
+        # bars.get_open_hand_value(prediction[3])
+
+        # print(np.round(prediction, 2))
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):

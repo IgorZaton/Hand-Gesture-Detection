@@ -1,0 +1,61 @@
+<Output>:
+  
+    orientation: 'vertical'
+    canvas:
+        Color: 
+            rgb: .3, .3, .3
+        Rectangle: 
+            pos: self.pos 
+            size: self.size 
+  
+    Label:
+        text: 'OPEN HAND'
+        font_size: '25sp'
+        color: .0, 0, .0, 1
+        markup: True
+  
+    ProgressBar:
+        value: app.get_open_hand_value()
+        min: 0
+        max: 1
+        pos_hint: {'x':.1} 
+        size_hint_x: .8
+
+    Label:
+        text: 'FIST'
+        font_size: '25sp'
+        color: .0, 0, .0, 1
+        markup: True
+
+    ProgressBar:
+        value: app.get_fist_value()
+        min: 0
+        max: 1
+        pos_hint: {'x':.1}
+        size_hint_x: .8
+    Label:
+        text: 'PEACE'
+        font_size: '25sp'
+        color: .0, 0, .0, 1
+        markup: True
+
+    ProgressBar:
+        value: app.get_peace_value()
+        min: 0
+        max: 1
+        pos_hint: {'x':.1}
+        size_hint_x: .8
+
+    Label:
+        text: 'YOLO'
+        font_size: '25sp'
+        color: .0, 0, .0, 1
+        markup: True
+
+    ProgressBar: 
+        value: app.get_yolo_value()
+        min: 0
+        max: 1
+        pos_hint: {'x':.1} 
+        size_hint_x: .8
+     
