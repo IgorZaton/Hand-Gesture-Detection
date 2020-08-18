@@ -1,0 +1,8 @@
+# Hand Gesture Detection
+This project is convolutional neural network that can predict hand gests. I've collected data using get_data() function for 4 cases: open hand, fist, peace and yolo gests.
+The CNN is created with tensorflow keras and it contains input layer, 2 inner layers and output layer. Train data are available in data directiory.
+All API stuff are created with tkinter.
+
+When You run the program You have to set mask for proper range, so the input images would be nice and smooth. I've applied this so everyone could use it in every light conditions etc.
+When the mask is set You can press Start button and CNN will start predict. Results of predictions are display in simple tkinter window with progress bars.
+
