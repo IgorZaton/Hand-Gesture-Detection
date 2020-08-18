@@ -6,9 +6,10 @@ import os
 import SlidersC
 import numpy as np
 import copy
-import app
 import Bar
 
+#functions that are used to:
+#   collect data for training
 def get_data(dset_name, imgnum=500, time_between_shots=0.1, IMG_SIZE=50):
     vs = VideoStream(src=0).start()
     time.sleep(3.0)
@@ -68,6 +69,7 @@ def get_data(dset_name, imgnum=500, time_between_shots=0.1, IMG_SIZE=50):
     vs.stop()
     cv2.destroyAllWindows()
 
+#   set camera so mask would work well
 
 def set_camera(IMG_WIDTH=50, IMG_HEIGHT=37):
 
@@ -101,13 +103,12 @@ def set_camera(IMG_WIDTH=50, IMG_HEIGHT=37):
     (hvh, hvs, hvv) = sliders.get_upper_values()
     return (lvh, lvs, lvv), (hvh, hvs, hvv)
 
+#   make prediction based on mask image and display output
 
 def predict_camera_input(model, hsv_lower_values, hsv_upper_values, IMG_WIDTH=50, IMG_HEIGHT=37):
 
     vs = VideoStream(src=0).start()
     time.sleep(3.0)
-    # bars = app.mainApp()
-    # bars.run()
     bar = Bar.Bar()
 
     while (True):
@@ -129,7 +130,6 @@ def predict_camera_input(model, hsv_lower_values, hsv_upper_values, IMG_WIDTH=50
         mask = np.array(mask).reshape(-1, IMG_WIDTH, IMG_HEIGHT, 1)
         mask = mask / 255.0
 
-        # return mask
         prediction = model.predict(mask)
         prediction = np.round(prediction, 2)*100
         bar.update(prediction[0][0], prediction[0][1], prediction[0][2], prediction[0][3])
@@ -143,6 +143,7 @@ def predict_camera_input(model, hsv_lower_values, hsv_upper_values, IMG_WIDTH=50
     vs.stop()
     cv2.destroyAllWindows()
 
+#   load data from data folder
 
 def load_data(path_to_data_dir, CATEGORIES):  # pass path to your data directory
 
@@ -157,23 +158,9 @@ def load_data(path_to_data_dir, CATEGORIES):  # pass path to your data directory
             img_array = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
             data.append([img_array, class_num])
     return data
-    # path = os.path.join(path_to_data_dir)
-    # if path:
-    #     dirs = os.listdir(path + "/")
-    #     for d in dirs:
-    #         p = os.path.join(path + "/" + d)
-    #         for img in os.listdir(p):
-    #             if img.endswith('.png'):
-    #                 i = Image.open("data/"+d+"/"+img)
-    #                 matrix = np.asarray(i)
-    #                 temp_list.append(matrix)
-    #         t = copy.deepcopy(temp_list)
-    #         data[d] = t
-    #         temp_list.clear()
-    #     return data
-    # else:
-    #     ValueError("No data directory")
 
+#functions that are eventually not used, but might be preety useful:
+    #adding category for data in dictionary format
 
 def add_category(data):  # data is dict
     y = {}
@@ -189,6 +176,7 @@ def add_category(data):  # data is dict
         temp.clear()
     return y
 
+#   spliting data according to factor value
 
 def split_data(data, y, factor=0.75):
     train_x = []
@@ -207,6 +195,7 @@ def split_data(data, y, factor=0.75):
             d += 1
     return train_x, train_y, test_x, test_y
 
+#   normalize data -> make its in range 0-1
 
 def normalize_data(data):  # data is a numpy array
     for k in range(len(data)):

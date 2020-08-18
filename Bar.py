@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.ttk import *
 
+#Progress Bar class used to display output of convnet
 
 class Bar:
     def __init__(self):

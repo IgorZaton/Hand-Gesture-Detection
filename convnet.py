@@ -5,6 +5,7 @@ import numpy as np
 import random
 import os
 
+# class for CNN
 
 class ConvNet:
 
@@ -18,7 +19,6 @@ class ConvNet:
 
             IMG_WIDTH = 50
             IMG_HEIGHT = 37
-            IMG_SIZE = 50
 
             random.shuffle(data)
 
