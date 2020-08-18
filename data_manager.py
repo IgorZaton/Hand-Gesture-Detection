@@ -109,6 +109,7 @@ def predict_camera_input(model, hsv_lower_values, hsv_upper_values, IMG_WIDTH=50
     # bars = app.mainApp()
     # bars.run()
     bar = Bar.Bar()
+
     while (True):
 
         frame = vs.read()
@@ -128,15 +129,11 @@ def predict_camera_input(model, hsv_lower_values, hsv_upper_values, IMG_WIDTH=50
         mask = np.array(mask).reshape(-1, IMG_WIDTH, IMG_HEIGHT, 1)
         mask = mask / 255.0
 
+        # return mask
         prediction = model.predict(mask)
         prediction = np.round(prediction, 2)*100
         bar.update(prediction[0][0], prediction[0][1], prediction[0][2], prediction[0][3])
-        # bars.get_open_hand_value(prediction[0])
-        # bars.get_open_hand_value(prediction[1])
-        # bars.get_open_hand_value(prediction[2])
-        # bars.get_open_hand_value(prediction[3])
 
-        # print(np.round(prediction, 2))
         key = cv2.waitKey(1) & 0xFF
         # if the 'q' key is pressed, stop the loop
         if key == ord("q"):
